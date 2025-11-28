@@ -3,6 +3,13 @@ import { pgTable, text, varchar, integer, decimal, timestamp, boolean } from "dr
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 50 }).notNull().unique(),
+  password: varchar("password", { length: 255 }).notNull(), // hashed
+});
+
+
 // Patients table
 export const patients = pgTable("patients", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),

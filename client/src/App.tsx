@@ -4,6 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Navbar } from "@/components/navbar";
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 import Dashboard from "@/pages/dashboard";
 import Registration from "@/pages/registration";
 import Billing from "@/pages/billing";
@@ -12,10 +14,13 @@ import TreatmentMaster from "@/pages/treatment-master";
 import Reports from "@/pages/reports";
 import Expenses from "@/pages/expenses";
 import NotFound from "@/pages/not-found";
+import Login from "@/pages/login";
+
 
 function Router() {
   return (
     <Switch>
+      <Route path="/login" component={Login} /> 
       <Route path="/" component={Dashboard} />
       <Route path="/registration" component={Registration} />
       <Route path="/billing" component={Billing} />
@@ -29,11 +34,26 @@ function Router() {
 }
 
 function App() {
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    // don't run on server, only in browser
+    if (typeof window === "undefined") return;
+
+    const token = localStorage.getItem("token");
+
+    // if not logged in and not already on /login, send to login
+    if (!token && location !== "/login") {
+      setLocation("/login");
+    }
+  }, [location, setLocation]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <div className="min-h-screen bg-background">
-          <Navbar />
+          {/* Hide navbar on login page if you want */}
+          {location !== "/login" && <Navbar />}
           <main>
             <Router />
           </main>

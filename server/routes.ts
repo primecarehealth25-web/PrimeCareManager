@@ -1,4 +1,6 @@
 import type { Express } from "express";
+import bcrypt from "bcryptjs";
+import { users } from "@shared/schema";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertPatientSchema, insertVisitSchema, insertMedicineSchema, insertTreatmentSchema, insertExpenseSchema } from "@shared/schema";
@@ -8,6 +10,20 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Login
+  app.post("/api/auth/login", async (req, res) => {
+    const { username, password } = req.body;
+  
+    const user = await db.query.users.findFirst({ where: (u) => u.username === username });
+  
+    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+  
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+  
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, { expiresIn: "1d" });
+    res.json({ token });
+  });
   
   // Dashboard stats
   app.get("/api/dashboard/stats", async (req, res) => {
